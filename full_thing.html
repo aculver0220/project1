@@ -14,19 +14,18 @@ our $last = [undef. undef];
 
 get '/' => 'index';
 
-get '/:date' => sub {
+get '/upload' => sub {
   my $c = shift;
-  my $output = output();
-  $c->render(template => 'chart', datasets => $output);
+  my $json = csvtojson($c -> param('file'), $c -> param('date'));
+  $c->render(template => 'chart', datasets => $json);
 };
 
-get '/' => 'upload';
-
-sub output {
-my $data = shift;
+sub csvtojson {
+my ($file, $date) = @_;
+return 'abc';
   my $R;
   my @r;
-
+return unless $data;
   $data->each(sub {
     chomp;
     my ($id, $date, $from, $to, undef, $length) = split /\t/;
@@ -77,7 +76,6 @@ __DATA__
     %= form_for upload => (enctype => 'multipart/form-data') => begin
       %= file_field 'fileupload'
       %= date_field 'date'
-      %= text_field 'abc'
       %= submit_button 'Upload'
     % end
 
@@ -118,7 +116,7 @@ __DATA__
   <br>
   <a href="maybe.html"><button id="nextPage">Go!</button>
 
-  @@ layouts/default.html.ep
+@@ layouts/default.html.ep
 <!DOCTYPE html>
 <html>
   <head><title><%= title %></title></head>
