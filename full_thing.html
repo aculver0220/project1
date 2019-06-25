@@ -4,7 +4,7 @@ use Mojo::ByteStream 'b';
 use Mojo::Collection;
 use Mojo::CSV;
 use Mojo::JSON 'j';
-use Mojo::Util qw(dumper sha1_sum);
+use Mojo::U til qw(dumper sha1_sum);
 
 use List::MoreUtils qw(first_index);
 use Time::Piece;
@@ -17,13 +17,13 @@ get '/' => 'index';
 post '/upload' => sub {
   my $c = shift;
   $c->reply->not_found unless $c->param('file') && $c->param('date');
+  <!-- error trap -->
   my $json = csvtojson($c->param('file'), $c->param('date'));
   $c->render(template => 'chart', datasets => $json);
 };
 
 sub csvtojson {
 my ($file, $date) = @_;
-return j({abc=>1});
   my $R;
   my @r;
   my $data;
@@ -83,7 +83,7 @@ __DATA__
 @@ index.html.ep
 % layout 'default';
 % title 'Welcome';
-    %= form_for upload => (enctype => 'multipart/form-data') => begin
+    %= form_for upload => (method => 'POST', enctype => 'multipart/form-data') => begin
       %= file_field 'fileupload'
       %= date_field 'date'
       %= submit_button 'Upload'
@@ -114,12 +114,14 @@ __DATA__
 	</div>
 	<br>
 	<br>
-	<button id="randomizeData">Randomize Data</button>
+	<!-- <button id="randomizeData">Randomize Data</button>
 	<button id="addDataset">Add Dataset</button>
 	<button id="removeDataset">Remove Dataset</button>
 	<button id="addData">Add Data</button>
 	<button id="removeData">Remove Data</button>
-	<script type="f43633757f96d18c5e98ef24-text/javascript">
+	<script type="f43633757f96d18c5e98ef24-text/javascript"> 
+
+    I don't think we need this (^^^). It looks like it pertains to the original, mock up graph -->
 		var timeFormat = 'MM/DD/YYYY HH:mm';
 
 		function newDate(days) {
@@ -134,6 +136,7 @@ __DATA__
 		var config = {
 			type: 'line',
 			data: {
+      <!-- LINE 46 EQUALVALENT -->
 				datasets: [<%== $datasets %>]
 			},
 			options: {
