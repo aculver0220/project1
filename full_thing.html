@@ -4,7 +4,7 @@ use Mojo::ByteStream 'b';
 use Mojo::Collection;
 use Mojo::CSV;
 use Mojo::JSON 'j';
-use Mojo::U til qw(dumper sha1_sum);
+use Mojo::Util qw(dumper sha1_sum);
 
 use List::MoreUtils qw(first_index);
 use Time::Piece;
@@ -16,6 +16,7 @@ get '/' => 'index';
 
 post '/upload' => sub {
   my $c = shift;
+  my $json = json;
   $c->reply->not_found unless $c->param('file') && $c->param('date');
   <!-- error trap -->
   my $json = csvtojson($c->param('file'), $c->param('date'));
@@ -29,6 +30,7 @@ my ($file, $date) = @_;
   my $data;
   return unless $data;
   # $data = Mojo::CSV->new...
+  <!-- NEED TO DO ^ ; -->
   $data->each(sub {
     chomp;
     my ($id, $date, $from, $to, undef, $length) = split /\t/;
@@ -39,35 +41,34 @@ my ($file, $date) = @_;
     push @{$R->{$r}->{$date->ymd}}, {x => $date->cdate, y => $index};
     push @{$R->{$r}->{$date->ymd}}, {x => ($date + _hms($length))->cdate, y => $index};
     push @{$R->{$r}->{$date->ymd}}, {x => ($date + _hms($length) + 1)->cdate, y => 0};
-  });
   my @color = qw(aaa green red bbb blue bbb black orange);
   foreach my $r ( sort { $a <=> $b } keys %$R ) {
     unshift @{$R->{$r}->{$ARGV[0]}}, {x => Time::Piece->strptime(sprintf('%sT07:30:00', $ARGV[0]), '%Y-%m-%dT%H:%M:%S'), y => 0};
+  }
     push @{$R->{$r}->{$ARGV[0]}}, {x => Time::Piece->strptime(sprintf('%sT17:00:00', $ARGV[0]), '%Y-%m-%dT%H:%M:%S'), y => 0};
     my ($index) = ($r =~ /(\d)$/);
     my $color = $color[$index];
     my $out = <<END;
+  };
 
   {
-
     label: '$r',
     steppedLine: true,
     backgroundColor: color(window.chartColors.$color).alpha(0.5).rgbString(),
     borderColor: window.chartColors.$color,
     fill: false,
     data: [
+  }
 END
     $out .= join ',', map { sprintf("{\nx: moment(\"%s\"),\ny: %s\n}", $_->{x}, $_->{y}) } @{$R->{$r}->{$ARGV[0]}};
-    #say j($R->{$r}->{'2019-05-22'});
-    $out=~s/\}\{/\},\{/g;
-  }  
-}
+    say j($R->{$r}->{'2019-05-22'});
+    $out =~ s/\{}\{/\},\{/g;
+    say "$out]},";
+};
 
-sub _hms { return 0 unless $_[0]; @_ = split /:/, shift; $_[0]*3600+$_[1]*60+($_[2]||0) }
+sub _hms { return 0 unless $_[0]; @_ = split /:/, shift; $_[0]*3600+$_[1]*60+($_[2]||0) };
 
-sub hms2s { my $hms = b(shift)->split(":"); @$hms[0]*3600 + @$hms[1]*60 + @$hms[2] }
-
-sub new_id { substr sha1_sum($SEED . ($COUNTER = ($COUNTER +1) % 0xffffff)), 0, 8 }
+sub hms2s { my $hms = b(shift)->split(":"); @$hms[0]*3600 + @$hms[1]*60 + @$hms[2] };
 
 app->start;
 
@@ -114,14 +115,6 @@ __DATA__
 	</div>
 	<br>
 	<br>
-	<!-- <button id="randomizeData">Randomize Data</button>
-	<button id="addDataset">Add Dataset</button>
-	<button id="removeDataset">Remove Dataset</button>
-	<button id="addData">Add Data</button>
-	<button id="removeData">Remove Data</button>
-	<script type="f43633757f96d18c5e98ef24-text/javascript"> 
-
-    I don't think we need this (^^^). It looks like it pertains to the original, mock up graph -->
 		var timeFormat = 'MM/DD/YYYY HH:mm';
 
 		function newDate(days) {
